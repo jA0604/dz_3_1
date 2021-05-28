@@ -2,6 +2,7 @@ package dto
 
 data class Post(
     val id: Long,
+    val author: String,
     val authorId: Long,
     val content: String,
     val published: Long,
@@ -36,3 +37,9 @@ data class PostWithComments(
     val post: Post,
     val comments: List<Comment>,
 )
+
+data class PostWithAuthor (
+    val post: Post,
+    val author: Author,
+)
+

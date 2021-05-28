@@ -4,9 +4,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import dto.Comment
-import dto.Post
-import dto.PostWithComments
+import dto.*
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
@@ -31,19 +29,26 @@ fun main() {
     with(CoroutineScope(EmptyCoroutineContext)) {
         launch {
             try {
+                var idAuthor=0L
                 val posts = getPosts(client)
                     .map { post ->
+
                         async {
+                            PostWithAuthor(post, Author(idAuthor++, post.author, post.attachment?.url ?: ""))
                             PostWithComments(post, getComments(client, post.id))
                         }
                     }.awaitAll()
-                println(posts)
+
+                println("1. " + posts[4].post)
+                println("1. " + posts[4].post.author)
+                println("1. " + posts[4].comments)
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
-    Thread.sleep(30_000L)
+    Thread.sleep(3_000L)
 }
 
 suspend fun OkHttpClient.apiCall(url: String): Response {
@@ -77,8 +82,15 @@ suspend fun <T> makeRequest(url: String, client: OkHttpClient, typeToken: TypeTo
             }
     }
 
+
+
 suspend fun getPosts(client: OkHttpClient): List<Post> =
     makeRequest("$BASE_URL/api/slow/posts", client, object : TypeToken<List<Post>>() {})
 
 suspend fun getComments(client: OkHttpClient, id: Long): List<Comment> =
     makeRequest("$BASE_URL/api/slow/posts/$id/comments", client, object : TypeToken<List<Comment>>() {})
+
+suspend fun getPostAuthor(client: OkHttpClient, id: Long): List<Author> =
+    makeRequest("$BASE_URL/api/slow/authors/$id", client, object : TypeToken<List<Author>>() {})
+
+
